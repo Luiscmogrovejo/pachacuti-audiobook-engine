@@ -1,0 +1,152 @@
+---
+/**
+ * Nav.astro -- Responsive sticky navigation for Pachacuti
+ * Fixed top bar with PACHACUTI wordmark, horizontal links (desktop), hamburger overlay (mobile).
+ * Uses CSS checkbox hack for mobile menu toggle (no JS framework needed).
+ * z-40 to stay below PlayerIsland (z-50).
+ * Bilingual: reads pachacuti-lang cookie for SSR, defaults to Spanish.
+ * LanguagePill: ES/EN toggle visible on every page (desktop + mobile).
+ */
+import { getServerLanguage } from '../lib/i18n/getServerLanguage';
+import { t } from '../lib/i18n/strings';
+import { LanguagePill } from './LanguagePill';
+
+const lang = getServerLanguage(Astro);
+const currentPath = Astro.url.pathname;
+
+const links = [
+  { href: '/listen/prologue', label: t('nav.listen', lang) },
+  { href: '/characters', label: t('nav.characters', lang) },
+  { href: '/glossary', label: t('nav.glossary', lang) },
+  { href: '/quiz', label: t('nav.quiz', lang) },
+  { href: '/gallery', label: t('nav.gallery', lang) },
+  { href: '/settings', label: t('nav.settings', lang) },
+];
+
+// Sign In link styled separately as a gold CTA button
+const signInLink = { href: '/auth/signin', label: t('nav.signin', lang) };
+
+function isActive(href: string): boolean {
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
+---
+
+<nav class="sticky top-0 z-40 w-full bg-volcanic/80 backdrop-blur-sm border-b border-gold/10">
+  <div class="max-w-6xl mx-auto flex items-center justify-between h-14 px-4">
+    {/* Wordmark */}
+    <a href="/" class="font-heading-decorative text-gold text-lg tracking-wider hover:text-gold-light transition-colors">
+      PACHACUTI
+    </a>
+
+    {/* Desktop links (hidden on mobile) */}
+    <ul class="hidden md:flex items-center gap-4">
+      {links.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            class:list={[
+              'text-sm font-heading uppercase tracking-wider transition-colors',
+              isActive(link.href)
+                ? 'text-gold border-b-2 border-gold pb-1'
+                : 'text-text-secondary hover:text-gold',
+            ]}
+            aria-current={isActive(link.href) ? 'page' : undefined}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+      {/* Sign In CTA -- gold border button to stand out from nav links */}
+      <li>
+        <a
+          href={signInLink.href}
+          class:list={[
+            'text-sm font-heading uppercase tracking-wider transition-colors px-3 py-1 rounded-md border',
+            isActive(signInLink.href)
+              ? 'text-gold border-gold bg-gold/10'
+              : 'text-gold border-gold/40 hover:bg-gold/10 hover:border-gold/60',
+          ]}
+          aria-current={isActive(signInLink.href) ? 'page' : undefined}
+        >
+          {signInLink.label}
+        </a>
+      </li>
+    </ul>
+
+    {/* Desktop language pill (hidden on mobile) */}
+    <div class="hidden md:flex items-center">
+      <LanguagePill client:load />
+    </div>
+
+    {/* Mobile: language pill + hamburger (hidden on desktop) */}
+    <div class="flex md:hidden items-center gap-3">
+      <LanguagePill client:load />
+      <label
+        for="nav-toggle"
+        class="flex flex-col justify-center items-center w-10 h-10 cursor-pointer"
+        aria-label="Toggle navigation menu"
+      >
+        <span class="block w-5 h-0.5 bg-text-secondary mb-1 transition-transform" />
+        <span class="block w-5 h-0.5 bg-text-secondary mb-1 transition-opacity" />
+        <span class="block w-5 h-0.5 bg-text-secondary transition-transform" />
+      </label>
+    </div>
+
+    {/* Hidden checkbox for CSS mobile menu toggle */}
+    <input type="checkbox" id="nav-toggle" class="hidden" aria-hidden="true" />
+
+    {/* Mobile overlay menu */}
+    <div class="fixed inset-0 top-14 bg-volcanic/95 backdrop-blur-md z-40 hidden flex-col items-center justify-center gap-8 md:hidden" id="nav-overlay">
+      {links.map((link) => (
+        <a
+          href={link.href}
+          class:list={[
+            'text-xl font-heading uppercase tracking-wider transition-colors',
+            isActive(link.href) ? 'text-gold' : 'text-text-secondary hover:text-gold',
+          ]}
+          aria-current={isActive(link.href) ? 'page' : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+      {/* Sign In CTA -- gold border button */}
+      <a
+        href={signInLink.href}
+        class:list={[
+          'text-xl font-heading uppercase tracking-wider transition-colors px-6 py-2 rounded-md border',
+          isActive(signInLink.href)
+            ? 'text-gold border-gold bg-gold/10'
+            : 'text-gold border-gold/40 hover:bg-gold/10 hover:border-gold/60',
+        ]}
+        aria-current={isActive(signInLink.href) ? 'page' : undefined}
+      >
+        {signInLink.label}
+      </a>
+      {/* Language pill in overlay */}
+      <div class="mt-4">
+        <LanguagePill client:load />
+      </div>
+      {/* Close label */}
+      <label for="nav-toggle" class="mt-4 text-sm text-text-dim cursor-pointer hover:text-gold transition-colors">
+        {t('nav.close', lang)}
+      </label>
+    </div>
+  </div>
+</nav>
+
+<style>
+  /* CSS checkbox hack: :has() on the nav itself to toggle mobile menu + hamburger animation */
+  nav:has(#nav-toggle:checked) #nav-overlay {
+    display: flex;
+  }
+  nav:has(#nav-toggle:checked) label[for="nav-toggle"] span:first-child {
+    transform: rotate(45deg) translateY(6px);
+  }
+  nav:has(#nav-toggle:checked) label[for="nav-toggle"] span:nth-child(2) {
+    opacity: 0;
+  }
+  nav:has(#nav-toggle:checked) label[for="nav-toggle"] span:last-child {
+    transform: rotate(-45deg) translateY(-6px);
+  }
+</style>

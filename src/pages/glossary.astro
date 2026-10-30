@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { GLOSSARY } from '../lib/data/glossary';
+import { GlossaryBrowser } from '../components/universe/GlossaryBrowser';
+import { getServerLanguage } from '../lib/i18n/getServerLanguage';
+import { t } from '../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+---
+<BaseLayout
+  title="Quechua Glossary"
+  ogTitle="Quechua Glossary | Pachacuti"
+  ogDescription="186 Quechua words from the world of Pachacuti -- explore the language of the Inca Empire"
+>
+  <div class="fixed inset-0 -z-10">
+    <img src="/art/backgrounds/ui/glossary-bg.webp" alt="" class="w-full h-full object-cover opacity-40" />
+    <div class="absolute inset-0 bg-gradient-to-b from-volcanic/70 via-volcanic/60 to-volcanic/80"></div>
+  </div>
+  <main class="max-w-4xl mx-auto px-4 md:px-8 py-8">
+    {/* Page header (Astro-rendered, not in React island) */}
+    <header class="text-center mb-10">
+      <h1 class="text-3xl md:text-4xl text-gold mb-3" style="font-family: 'Cinzel Decorative', serif;">
+        {t('page.glossary.title', lang)}
+      </h1>
+      <p class="text-xl text-gold/70 mb-2" style="font-family: 'Cinzel', serif;">
+        {t('page.glossary.subtitle', lang)}
+      </p>
+      <p class="text-text-secondary text-lg mb-4" style="font-family: 'Crimson Text', serif;">
+        {t('page.glossary.count', lang)}
+      </p>
+      <p class="text-text-dim text-sm max-w-2xl mx-auto leading-relaxed" style="font-family: 'Crimson Text', serif;">
+        {t('page.glossary.description', lang)}
+      </p>
+    </header>
+
+    {/* GlossaryBrowser React island -- hydrates on scroll into view */}
+    <GlossaryBrowser client:visible entries={GLOSSARY} />
+  </main>
+</BaseLayout>

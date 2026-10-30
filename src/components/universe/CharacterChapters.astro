@@ -1,0 +1,106 @@
+---
+import { CHAPTERS } from '../../lib/data/chapters';
+import { CHAPTER_SCENES } from '../../lib/data/scenes';
+
+interface Props {
+  characterId: string;
+  firstChapter: number;
+  spoilerChapter: number;
+}
+
+const { characterId, firstChapter, spoilerChapter } = Astro.props;
+
+// Find chapters where this character is POV
+const povChapters = CHAPTERS.filter(ch => ch.pov === characterId).map(ch => ch.chapter);
+
+// Find chapters where this character appears in scenes
+const sceneChapters: number[] = [];
+for (const [chapterNum, scenes] of Object.entries(CHAPTER_SCENES)) {
+  const num = parseInt(chapterNum, 10);
+  if (scenes.some(scene => scene.characters.includes(characterId))) {
+    sceneChapters.push(num);
+  }
+}
+
+// Merge and deduplicate, sort by chapter number
+const allAppearances = [...new Set([...povChapters, ...sceneChapters])].sort((a, b) => a - b);
+
+// Get chapter config for each appearance
+const appearances = allAppearances.map(chNum => {
+  const config = CHAPTERS.find(ch => ch.chapter === chNum);
+  if (!config) return null;
+  const isSpoiler = chNum > spoilerChapter;
+  const isPov = povChapters.includes(chNum);
+  return {
+    chapter: chNum,
+    slug: config.slug,
+    title: config.title,
+    region: config.region,
+    isSpoiler,
+    isPov,
+  };
+}).filter(Boolean);
+---
+
+{appearances.length > 0 && (
+  <section>
+    <h2 class="font-heading text-gold text-lg uppercase tracking-wider pb-2 mb-4 border-b border-gold/20">
+      Apariciones por Capitulo
+    </h2>
+    <div class="relative pl-6">
+      <!-- Vertical timeline line -->
+      <div class="absolute left-2 top-0 bottom-0 w-px bg-gold/20"></div>
+
+      <div class="space-y-4">
+        {appearances.map((app) => (
+          <div class="relative flex items-start gap-3">
+            <!-- Gold dot -->
+            <div class="absolute -left-4 top-1.5 w-2.5 h-2.5 rounded-full bg-gold border-2 border-volcanic flex-shrink-0"></div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <!-- Chapter number badge -->
+                <span class="font-heading text-xs text-gold bg-gold/10 px-2 py-0.5 rounded">
+                  Cap. {app.chapter}
+                </span>
+
+                {/* POV badge */}
+                {app.isPov && (
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-gold/20 text-gold font-heading uppercase tracking-wider">
+                    POV
+                  </span>
+                )}
+
+                {/* Spoiler badge */}
+                {app.isSpoiler && (
+                  <span class="text-[10px] px-1.5 py-0.5 rounded bg-volcanic-light text-text-dim font-heading uppercase tracking-wider">
+                    Spoiler
+                  </span>
+                )}
+              </div>
+
+              <!-- Chapter title or spoiler blur -->
+              {app.isSpoiler ? (
+                <p class="font-body text-sm text-text-dim mt-1 blur-sm select-none hover:blur-none transition-all cursor-help" title="Contiene spoilers">
+                  {app.title}
+                </p>
+              ) : (
+                <a
+                  href={`/listen/${app.slug}`}
+                  class="block font-body text-sm text-text-primary hover:text-gold transition-colors mt-1"
+                >
+                  {app.title}
+                </a>
+              )}
+
+              <!-- Region tag -->
+              <span class="font-body text-[10px] text-text-dim italic">
+                {app.region}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

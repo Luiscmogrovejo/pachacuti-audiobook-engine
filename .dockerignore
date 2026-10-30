@@ -1,0 +1,39 @@
+# Audio and art assets -- volume-mounted in k8s, NOT in Docker image
+public/audio/chapters/
+public/audio/timing/
+public/art/
+
+# Build artifacts
+dist/
+node_modules/
+.astro/
+
+# Git
+.git/
+.gitignore
+
+# Planning and docs
+.planning/
+docs/
+scripts/
+*.md
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test output
+test-results/
+playwright-report/
+
+# IDE
+.vscode/
+.idea/
+
+# Drizzle migrations (applied via migration job, not needed in runtime image)
+drizzle/

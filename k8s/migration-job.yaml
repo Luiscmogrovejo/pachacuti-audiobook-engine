@@ -1,0 +1,42 @@
+# One-shot Job to run Drizzle migrations against production PostgreSQL
+#
+# Usage:
+#   kubectl apply -f k8s/migration-job.yaml
+#   kubectl logs -n pachacuti job/pachacuti-migrate
+#
+# NOTE: Not included in kustomization.yaml -- apply manually before
+# first deploy and after schema changes, not on every kubectl apply.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pachacuti-migrate
+  namespace: pachacuti
+  labels:
+    app: pachacuti
+    component: migration
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: registry.example:5000/pachacuti:latest
+          command:
+            - npx
+            - drizzle-kit
+            - migrate
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: database-url
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi

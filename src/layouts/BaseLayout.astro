@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import { PlayerIsland } from '../components/player/PlayerIsland';
+import { CopyProtection } from '../components/CopyProtection';
+import Nav from '../components/Nav.astro';
+import { getServerLanguage } from '../lib/i18n/getServerLanguage';
+import { t } from '../lib/i18n/strings';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** OG meta tags for social sharing */
+  ogTitle?: string;
+  ogDescription?: string;
+  ogType?: string;
+}
+
+const {
+  title,
+  description = 'Pachacuti: An immersive Inca audiobook experience',
+  ogTitle,
+  ogDescription,
+  ogType,
+} = Astro.props;
+
+const lang = getServerLanguage(Astro);
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#1a0800" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Preload critical fonts (eliminates FOIT, improves LCP) -->
+    <link rel="preload" href="/fonts/Cinzel-Bold.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/CrimsonText-Regular.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- Preconnect for Cloudflare Turnstile (reduces connection latency) -->
+    <link rel="preconnect" href="https://challenges.cloudflare.com" crossorigin />
+    <link rel="dns-prefetch" href="https://challenges.cloudflare.com" />
+
+    {/* Apply user accessibility preferences before first paint (no FOUC) */}
+    <script is:inline>
+    (function(){
+      try {
+        var s = localStorage.getItem('pachacuti-font-scale');
+        if (s) document.documentElement.style.setProperty('--user-font-scale', s);
+        if (localStorage.getItem('pachacuti-reduce-motion') === 'true') document.documentElement.classList.add('reduce-motion');
+        if (localStorage.getItem('pachacuti-high-contrast') === 'true') document.documentElement.classList.add('high-contrast');
+      } catch(e) {}
+    })();
+    </script>
+    <title>{title} | Pachacuti</title>
+    {ogTitle && <meta property="og:title" content={ogTitle} />}
+    {ogDescription && <meta property="og:description" content={ogDescription} />}
+    {ogType && <meta property="og:type" content={ogType} />}
+    <ClientRouter />
+  </head>
+  <body class="min-h-screen bg-volcanic text-text-primary font-body antialiased pb-20">
+    <CopyProtection client:load />
+    <Nav />
+    <slot />
+    <PlayerIsland client:load transition:persist currentPath={Astro.url.pathname} />
+    {/* Copyright footer -- visible on non-listen pages (listen page has it in player controls) */}
+    {!Astro.url.pathname.startsWith('/listen/') && (
+      <footer class="text-xs text-text-secondary/50 text-center py-4 select-none">
+        &copy; 2026 Luis Mogrovejo. {t('footer.rights', lang)}
+      </footer>
+    )}
+  </body>
+</html>

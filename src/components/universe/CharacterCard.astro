@@ -1,0 +1,64 @@
+---
+import type { CharacterData } from '../../lib/data/characters';
+
+interface Props {
+  character: CharacterData;
+}
+
+const { character } = Astro.props;
+const initial = character.name.charAt(0);
+---
+
+<a
+  href={`/characters/${character.slug}`}
+  class="group block rounded-xl border border-white/10 bg-volcanic-light/30 hover:border-white/25 transition-all duration-300 overflow-hidden"
+  style={`--accent: ${character.accent}`}
+  data-testid="character-card"
+>
+  <!-- Portrait section -->
+  <div class="w-full aspect-square overflow-hidden rounded-t-xl bg-stone/50 relative">
+    <!-- Fallback: always rendered behind the image -->
+    <div class="absolute inset-0 flex items-center justify-center bg-stone/80">
+      <span
+        class="font-heading-decorative text-4xl select-none"
+        style={`color: ${character.accent}`}
+      >
+        {initial}
+      </span>
+    </div>
+    <!-- Portrait image: covers fallback when loaded, pointer-events disabled for protection -->
+    <img
+      src={character.portrait}
+      alt={character.name}
+      loading="eager"
+      draggable="false"
+      class="absolute inset-0 w-full h-full object-cover z-10 select-none"
+      style="-webkit-user-drag: none;"
+      data-testid="character-portrait"
+    />
+    <!-- Transparent overlay: prevents right-click save image -->
+    <div class="absolute inset-0 z-20" oncontextmenu="event.preventDefault()"></div>
+  </div>
+
+  <!-- Text section -->
+  <div class="p-4 space-y-1.5">
+    <h3 class="font-heading font-bold text-sm text-text-primary uppercase tracking-wider group-hover:text-gold transition-colors">
+      {character.name}
+    </h3>
+    <p
+      class="font-body italic text-xs line-clamp-1"
+      style={`color: ${character.accent}`}
+    >
+      {character.title}
+    </p>
+    <p class="font-body text-xs text-text-dim line-clamp-2">
+      {character.role}
+    </p>
+    <span
+      class="inline-block text-[10px] px-2 py-0.5 rounded-full border mt-1"
+      style={`color: ${character.accent}; border-color: color-mix(in srgb, ${character.accent} 30%, transparent)`}
+    >
+      {character.faction}
+    </span>
+  </div>
+</a>

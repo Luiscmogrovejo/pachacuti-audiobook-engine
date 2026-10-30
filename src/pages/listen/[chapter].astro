@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { VALID_SLUGS, CHAPTER_BY_SLUG } from '../../lib/data/chapters';
+import { AccessGate } from '../../components/auth/AccessGate';
+
+const { chapter } = Astro.params;
+
+// Validate slug -- 404 for invalid
+if (!chapter || !VALID_SLUGS.has(chapter)) {
+  return new Response('Chapter not found', { status: 404 });
+}
+
+const chapterConfig = CHAPTER_BY_SLUG.get(chapter)!;
+
+const pageTitle = chapterConfig.chapter === 0
+  ? `Prologue: ${chapterConfig.title}`
+  : `Chapter ${chapterConfig.chapter}: ${chapterConfig.title}`;
+
+const chapterTier = chapterConfig.tier;
+const chapterTitle = chapterConfig.title;
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+---
+
+<BaseLayout title={pageTitle}>
+  <!-- AccessGate checks tier + auth: free passes through, signup shows gate, paid shows stub -->
+  <AccessGate
+    client:load
+    chapterSlug={chapter}
+    tier={chapterTier}
+    chapterTitle={chapterTitle}
+    turnstileSiteKey={turnstileSiteKey}
+  >
+    <!-- Listen page body: PlayerIsland (in BaseLayout) detects /listen/* path
+         and renders the full-screen atmospheric + karaoke + controls layout.
+         This page only provides the route and title. The bg-volcanic prevents
+         flash of white before the PlayerIsland mounts. -->
+    <div class="fixed inset-0 bg-volcanic" />
+  </AccessGate>
+</BaseLayout>

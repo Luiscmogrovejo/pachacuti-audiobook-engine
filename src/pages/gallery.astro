@@ -1,0 +1,120 @@
+---
+/**
+ * gallery.astro -- Chapter Art Gallery page with tiered access control
+ * Non-authenticated: 1 image per chapter + 3 main trio portraits
+ * Authenticated: all images + all character portraits
+ * GalleryIsland React island handles access gating client-side via useSession.
+ * Bilingual: reads pachacuti-lang cookie for SSR, defaults to Spanish.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { CHAPTER_SCENES } from '../lib/data/scenes';
+import { CHAPTERS } from '../lib/data/chapters';
+import { CHARACTERS } from '../lib/data/characters';
+import { GalleryLightbox } from '../components/universe/GalleryLightbox';
+import { GalleryIsland } from '../components/universe/GalleryIsland';
+import { getServerLanguage } from '../lib/i18n/getServerLanguage';
+import { t } from '../lib/i18n/strings';
+
+import type { SceneImage } from '../lib/data/scenes';
+
+const lang = getServerLanguage(Astro);
+
+// Build sorted chapter entries with scenes, skipping empty chapters
+const chapterEntries = Object.entries(CHAPTER_SCENES)
+  .map(([chNum, scenes]) => ({
+    chapter: parseInt(chNum, 10),
+    scenes: scenes as SceneImage[],
+  }))
+  .filter(entry => entry.scenes.length > 0)
+  .sort((a, b) => a.chapter - b.chapter);
+
+// Build flat array of all scenes for the lightbox (with chapter info)
+interface LightboxScene {
+  id: string;
+  chapter: number;
+  imagePath: string;
+  description: string;
+}
+
+let flatIndex = 0;
+const allScenes: LightboxScene[] = [];
+
+// Build chapter data with flat indices
+const chaptersWithIndices = chapterEntries.map(entry => {
+  const chapterConfig = CHAPTERS.find(ch => ch.chapter === entry.chapter);
+  const title = lang === 'en'
+    ? chapterConfig?.titleEn ?? `Chapter ${entry.chapter}`
+    : chapterConfig?.title ?? `Capitulo ${entry.chapter}`;
+
+  const scenesWithIndex = entry.scenes.map(scene => {
+    const idx = flatIndex++;
+    allScenes.push({
+      id: scene.id,
+      chapter: scene.chapter,
+      imagePath: scene.imagePath,
+      description: scene.description,
+    });
+    return { ...scene, flatIndex: idx };
+  });
+
+  return {
+    chapter: entry.chapter,
+    title,
+    scenes: scenesWithIndex,
+  };
+});
+
+const totalScenes = allScenes.length;
+
+// Character portrait data for gallery (minimal serializable subset)
+const characterPortraits = CHARACTERS.map(c => ({
+  id: c.id,
+  name: c.name,
+  portrait: c.portrait,
+  accent: c.accent,
+}));
+---
+<BaseLayout
+  title={t('page.gallery.title', lang)}
+  ogTitle={`${t('page.gallery.title', lang)} | Pachacuti`}
+  ogDescription={t('page.gallery.subtitle', lang)}
+>
+  {/* Background */}
+  <div class="fixed inset-0 -z-10">
+    <img src="/art/backgrounds/ui/tocapu-dark.webp" alt="" class="w-full h-full object-cover opacity-40" />
+    <div class="absolute inset-0 bg-gradient-to-b from-volcanic/70 via-volcanic/60 to-volcanic/80"></div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 md:px-8 py-8">
+    {/* Page header */}
+    <header class="text-center mb-12">
+      <h1 class="text-3xl md:text-4xl text-gold mb-3" style="font-family: 'Cinzel Decorative', serif;">
+        {t('page.gallery.title', lang)}
+      </h1>
+      <p class="text-xl text-gold/70 italic mb-2" style="font-family: 'Crimson Text', serif;">
+        {t('page.gallery.subtitle', lang)}
+      </p>
+      <p class="text-text-dim text-sm" style="font-family: 'Crimson Text', serif;">
+        {totalScenes} {lang === 'en' ? 'scenes' : 'escenas'}
+      </p>
+    </header>
+
+    {/* GalleryIsland React island -- handles tiered access control */}
+    <GalleryIsland
+      client:load
+      chaptersWithIndices={chaptersWithIndices}
+      allScenes={allScenes}
+      totalScenes={totalScenes}
+      characterPortraits={characterPortraits}
+      lang={lang}
+    />
+
+    {/* Copyright notice */}
+    <p class="text-center text-text-dim/60 text-xs mt-8 select-none" style="font-family: 'Crimson Text', serif;">
+      {t('page.gallery.copyright', lang)}
+    </p>
+  </main>
+
+  {/* GalleryLightbox React island */}
+  <GalleryLightbox client:load scenes={allScenes} />
+</BaseLayout>

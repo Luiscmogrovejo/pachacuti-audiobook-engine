@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { PaymentIsland } from '../components/payment/PaymentIsland';
+import { getServerLanguage } from '../lib/i18n/getServerLanguage';
+import { t } from '../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+---
+
+<BaseLayout title={t('page.payment.title', lang)} description={t('page.payment.subtitle', lang)}>
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute inset-0" style="background: linear-gradient(180deg, #0a0908 0%, #1a1410 40%, #0a0908 100%)"></div>
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse 60% 40% at 50% 30%, rgba(212, 168, 67, 0.06), transparent)"></div>
+  </div>
+
+  <main class="max-w-lg mx-auto px-4 md:px-8 py-12 md:py-20">
+    {/* Header */}
+    <div class="text-center mb-10">
+      <h1
+        class="font-heading-decorative text-3xl md:text-4xl mb-2"
+        style="color: #d4a843;"
+      >
+        {t('page.payment.title', lang)}
+      </h1>
+      <p class="font-body text-text-secondary text-lg">
+        {t('page.payment.subtitle', lang)}
+      </p>
+    </div>
+
+    {/* Payment island */}
+    <PaymentIsland client:load />
+
+    {/* Back link */}
+    <div class="mt-10 text-center">
+      <a href="/" class="text-sm text-text-secondary hover:text-gold transition-colors">
+        &larr; {t('page.signin.back', lang)}
+      </a>
+    </div>
+  </main>
+</BaseLayout>

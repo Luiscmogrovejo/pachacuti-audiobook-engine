@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Quechua pronunciation lexicon for en-US. SAMPLE: 5 terms. -->
+<!-- The full lexicon is generated from private content by -->
+<!-- scripts/build-quechua-lexicon.ts (grapheme to IPA, stress-rule engine plus -->
+<!-- an override table). Regenerate: npx tsx scripts/build-quechua-lexicon.ts -->
+<lexicon version="1.0"
+    xmlns="http://www.w3.org/2005/01/pronunciation-lexicon"
+    alphabet="ipa" xml:lang="en-US">
+  <lexeme>
+    <grapheme>Tawantinsuyu</grapheme>
+    <phoneme>ta.wan.tin.ˈsu.ju</phoneme>
+  </lexeme>
+  <lexeme>
+    <grapheme>Qosqo</grapheme>
+    <phoneme>ˈqos.qo</phoneme>
+  </lexeme>
+  <lexeme>
+    <grapheme>Pachacuti</grapheme>
+    <phoneme>pa.tʃa.ˈku.ti</phoneme>
+  </lexeme>
+  <lexeme>
+    <grapheme>Sacsayhuaman</grapheme>
+    <phoneme>sak.saj.wa.ˈman</phoneme>
+  </lexeme>
+  <lexeme>
+    <grapheme>Wiracocha</grapheme>
+    <phoneme>wi.ɾa.ˈko.tʃa</phoneme>
+  </lexeme>
+</lexicon>

@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { QUIZ_QUESTIONS, QUIZ_CATEGORIES } from '../lib/data/quiz';
+import { QuizEngine } from '../components/universe/QuizEngine';
+import { getServerLanguage } from '../lib/i18n/getServerLanguage';
+import { t } from '../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+---
+<BaseLayout
+  title="Quiz"
+  ogTitle="Quiz | Pachacuti"
+  ogDescription="Test your knowledge of the Inca world with 120 questions across 6 categories"
+>
+  <div class="fixed inset-0 -z-10">
+    <img src="/art/backgrounds/ui/stone-texture.webp" alt="" class="w-full h-full object-cover opacity-40" />
+    <div class="absolute inset-0 bg-gradient-to-b from-volcanic/70 via-volcanic/60 to-volcanic/80"></div>
+  </div>
+  <main class="max-w-2xl mx-auto px-4 md:px-8 py-8">
+    {/* Page header (Astro-rendered) */}
+    <header class="text-center mb-10">
+      <h1 class="text-3xl md:text-4xl text-gold mb-3" style="font-family: 'Cinzel Decorative', serif;">
+        {t('page.quiz.title', lang)}
+      </h1>
+      <p class="text-xl text-gold/70 mb-2" style="font-family: 'Cinzel', serif;">
+        {t('page.quiz.subtitle', lang)}
+      </p>
+      <p class="text-text-secondary text-lg mb-4" style="font-family: 'Crimson Text', serif;">
+        {t('page.quiz.count', lang)}
+      </p>
+      <p class="text-text-dim text-sm" style="font-family: 'Crimson Text', serif;">
+        {t('page.quiz.detail', lang)}
+      </p>
+    </header>
+
+    {/* QuizEngine React island */}
+    <QuizEngine client:visible questions={QUIZ_QUESTIONS} categories={QUIZ_CATEGORIES} />
+
+    {/* Navigation links */}
+    <nav class="mt-12 pt-8 border-t border-gold/10 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm">
+      <a href="/" class="text-text-secondary hover:text-gold transition-colors" style="font-family: 'Cinzel', serif;">
+        {t('page.quiz.back', lang)}
+      </a>
+      <span class="hidden sm:inline text-text-dim">&middot;</span>
+      <a href="/glossary" class="text-text-secondary hover:text-gold transition-colors" style="font-family: 'Cinzel', serif;">
+        {t('page.quiz.study', lang)}
+      </a>
+    </nav>
+  </main>
+</BaseLayout>

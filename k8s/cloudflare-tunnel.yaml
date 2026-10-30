@@ -1,0 +1,103 @@
+# Cloudflare Tunnel -- config-file-based deployment
+#
+# Prerequisites (one-time):
+#   1. Tunnel UUID: <cloudflare-tunnel-uuid>
+#   2. Update k8s/secrets.yaml with real credentials.json content and apply:
+#      kubectl apply -f k8s/secrets.yaml
+#   3. kubectl apply -f k8s/cloudflare-tunnel.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: pachacuti
+  labels:
+    app: pachacuti
+    component: tunnel
+data:
+  config.yaml: |
+    tunnel: <cloudflare-tunnel-uuid>
+    credentials-file: /etc/cloudflared/credentials.json
+
+    ingress:
+      - hostname: <your-host>
+        service: http://pachacuti.pachacuti.svc.cluster.local:80
+        originRequest:
+          httpHostHeader: <your-host>
+          noTLSVerify: false
+          connectTimeout: 10s
+          keepAliveConnections: 10
+
+      # Catch-all returns 404 for unmapped hostnames
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: pachacuti
+  labels:
+    app: pachacuti
+    component: tunnel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pachacuti
+      component: tunnel
+  template:
+    metadata:
+      labels:
+        app: pachacuti
+        component: tunnel
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2024.2.1
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config.yaml
+            - --no-autoupdate
+            - run
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: credentials
+              mountPath: /etc/cloudflared/credentials.json
+              subPath: credentials.json
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            exec:
+              command:
+                - /usr/local/bin/cloudflared
+                - tunnel
+                - info
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 3
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-config
+        - name: credentials
+          secret:
+            secretName: cloudflared-credentials
+            items:
+              - key: credentials.json
+                path: credentials.json

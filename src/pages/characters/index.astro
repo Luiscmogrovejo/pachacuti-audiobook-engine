@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CharacterCard from '../../components/universe/CharacterCard.astro';
+import { CharacterGridIsland } from '../../components/universe/CharacterGridIsland';
+import { CHARACTERS } from '../../lib/data/characters';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+
+// Sort by firstChapter for story order
+const sortedCharacters = [...CHARACTERS].sort((a, b) => a.firstChapter - b.firstChapter);
+
+// Main trio featured at top (always visible)
+const mainTrio = CHARACTERS.filter(c => ['cusi', 'rumi', 'naymlap'].includes(c.id));
+const otherCharacters = sortedCharacters.filter(c => !['cusi', 'rumi', 'naymlap'].includes(c.id));
+
+// Minimal data for React island (JSON-safe)
+const otherCharactersMinimal = otherCharacters.map(c => ({
+  id: c.id,
+  slug: c.slug,
+  name: c.name,
+  accent: c.accent,
+  portrait: c.portrait,
+  title: c.title,
+}));
+---
+
+<BaseLayout title="Los Personajes de Pachacuti" description="32 characters from the world of the Inca -- warriors, priests, kings, and the stones that dream.">
+  <div class="fixed inset-0 -z-10">
+    <img src="/art/backgrounds/ui/characters-bg.webp" alt="" class="w-full h-full object-cover opacity-40" />
+    <div class="absolute inset-0 bg-gradient-to-b from-volcanic/70 via-volcanic/60 to-volcanic/80"></div>
+  </div>
+  <main class="max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-12">
+    <!-- Header -->
+    <div class="text-center mb-10 md:mb-14">
+      <h1 class="font-heading-decorative text-3xl md:text-4xl lg:text-5xl text-gold mb-3">
+        {t('page.characters.title', lang)}
+      </h1>
+      <p class="font-body text-text-secondary text-lg md:text-xl max-w-2xl mx-auto">
+        {t('page.characters.subtitle', lang)}
+      </p>
+    </div>
+
+    <!-- Featured: The Main Trio (always visible) -->
+    <section class="mb-12">
+      <h2 class="font-heading text-gold-dark text-sm uppercase tracking-[0.2em] mb-6 text-center">
+        {t('page.characters.trio', lang)}
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+        {mainTrio.map(character => (
+          <CharacterCard character={character} />
+        ))}
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="flex items-center gap-4 mb-10">
+      <div class="flex-1 h-px bg-gold/15"></div>
+      <span class="font-heading text-gold-dark text-xs uppercase tracking-[0.2em]">{t('page.characters.all', lang)}</span>
+      <div class="flex-1 h-px bg-gold/15"></div>
+    </div>
+
+    <!-- Full Grid (with tiered access via React island) -->
+    <CharacterGridIsland
+      client:load
+      characters={otherCharactersMinimal}
+      lang={lang}
+    />
+
+    <!-- Back to home -->
+    <div class="mt-12 text-center">
+      <a href="/" class="font-heading text-sm text-gold hover:text-gold-light transition-colors">
+        &larr; {t('page.characters.back', lang)}
+      </a>
+    </div>
+  </main>
+</BaseLayout>

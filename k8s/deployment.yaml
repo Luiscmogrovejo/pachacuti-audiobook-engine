@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pachacuti
+  namespace: pachacuti
+  labels:
+    app: pachacuti
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pachacuti
+  template:
+    metadata:
+      labels:
+        app: pachacuti
+    spec:
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: app
+          image: registry.example:5000/pachacuti:v7.3-20260330
+          ports:
+            - containerPort: 4321
+              name: http
+          env:
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "4321"
+            - name: NODE_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: database-url
+            - name: BETTER_AUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: better-auth-secret
+            - name: BETTER_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: better-auth-url
+            - name: PUBLIC_BETTER_AUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: better-auth-url
+            - name: AUDIO_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: audio-token-secret
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: resend-api-key
+            - name: TURNSTILE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: turnstile-secret-key
+            - name: PUBLIC_TURNSTILE_SITE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: turnstile-site-key
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: stripe-secret-key
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: stripe-webhook-secret
+            - name: PUBLIC_STRIPE_PRICE_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pachacuti-app-secrets
+                  key: stripe-price-id
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 4321
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4321
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: media
+              mountPath: /app/dist/client/audio
+              subPath: audio
+            - name: media
+              mountPath: /app/dist/client/art
+              subPath: art
+      volumes:
+        - name: media
+          persistentVolumeClaim:
+            claimName: pachacuti-media

@@ -1,0 +1,100 @@
+---
+/**
+ * WorldPreview.astro -- "El Mundo de Pachacuti" stats cards section
+ * Three cards linking to Characters, Glossary, and Quiz with counts.
+ * Plus a link to the interactive map.
+ * Bilingual: reads pachacuti-lang cookie for SSR.
+ */
+import { CHARACTERS } from '../../lib/data/characters';
+import { GLOSSARY } from '../../lib/data/glossary';
+import { QUIZ_QUESTIONS } from '../../lib/data/quiz';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+
+const stats = lang === 'en' ? [
+  {
+    count: CHARACTERS.length,
+    label: 'Characters',
+    description: 'Warriors, priests, kings, and stone guardians populate the Tawantinsuyu.',
+    href: '/characters',
+  },
+  {
+    count: GLOSSARY.length,
+    label: 'Quechua Words',
+    description: 'A living glossary of the ancient language woven through every chapter.',
+    href: '/glossary',
+  },
+  {
+    count: QUIZ_QUESTIONS.length,
+    label: 'Quiz Questions',
+    description: 'Test your knowledge of Inca history, Quechua vocabulary, and the story.',
+    href: '/quiz',
+  },
+] : [
+  {
+    count: CHARACTERS.length,
+    label: 'Personajes',
+    description: 'Guerreros, sacerdotes, reyes y guardianes de piedra pueblan el Tawantinsuyu.',
+    href: '/characters',
+  },
+  {
+    count: GLOSSARY.length,
+    label: 'Palabras Quechua',
+    description: 'Un glosario vivo del idioma antiguo tejido en cada capitulo.',
+    href: '/glossary',
+  },
+  {
+    count: QUIZ_QUESTIONS.length,
+    label: 'Preguntas',
+    description: 'Pon a prueba tu conocimiento de la historia Inca, el vocabulario Quechua y la trama.',
+    href: '/quiz',
+  },
+];
+---
+
+<section class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    {/* Section title */}
+    <h2 class="font-heading text-gold text-2xl md:text-3xl text-center tracking-wide mb-12">
+      {t('section.world', lang)}
+    </h2>
+
+    {/* Stats grid */}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {stats.map((stat) => (
+        <a
+          href={stat.href}
+          class="group rounded-xl border border-gold/20 bg-volcanic-light/40 backdrop-blur-sm p-6 transition-all hover:border-gold/40 hover:shadow-[0_0_20px_rgba(212,168,67,0.08)]"
+        >
+          <p class="text-3xl font-heading-decorative text-gold mb-1">
+            {stat.count}
+          </p>
+          <p class="text-sm font-heading uppercase tracking-wider text-text-primary mb-2">
+            {stat.label}
+          </p>
+          <p class="text-sm text-text-dim leading-relaxed">
+            {stat.description}
+          </p>
+          <span class="inline-block mt-3 text-xs text-gold/60 group-hover:text-gold transition-colors uppercase tracking-widest">
+            {lang === 'en' ? 'Explore' : 'Explorar'} &rarr;
+          </span>
+        </a>
+      ))}
+    </div>
+
+    {/* Map link */}
+    <div class="mt-10 text-center">
+      <a
+        href="/map"
+        class="inline-flex items-center gap-2 text-sm font-heading text-gold/70 hover:text-gold transition-colors uppercase tracking-wider"
+      >
+        <span>{lang === 'en' ? 'Explore the Tawantinsuyu' : 'Explora el Tawantinsuyu'}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

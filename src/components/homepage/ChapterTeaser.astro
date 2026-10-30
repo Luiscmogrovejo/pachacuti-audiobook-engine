@@ -1,0 +1,136 @@
+---
+/**
+ * ChapterTeaser.astro -- "The Journey" horizontal scroll / grid of first 5 chapters
+ * Shows chapter number, title, region, POV character with mood-colored accent border.
+ * Mobile: horizontal snap scroll. Desktop: 3-column grid.
+ */
+import { CHAPTERS } from '../../lib/data/chapters';
+import { CHAPTER_THEMES } from '../../lib/data/themes';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+
+// Show first 5 chapters (3 free + 2 signup)
+const teaserChapters = CHAPTERS.slice(0, 5);
+
+// Map theme moods to left-border accent colors
+const moodColors: Record<string, string> = {
+  volcanic: '#e8522a',
+  warm: '#d4a843',
+  dark: '#28c8a0',
+  fire: '#ff7830',
+  cold: '#9070c8',
+  coastal: '#3c78b4',
+  golden: '#dca028',
+  mountain: '#b4c8dc',
+  stone: '#788c64',
+  tropical: '#2d7a3a',
+  fallback: '#d4a843',
+};
+
+function getMoodColor(slug: string): string {
+  const theme = CHAPTER_THEMES.find(t => t.slug === slug);
+  return moodColors[theme?.mood ?? 'fallback'] ?? moodColors.fallback;
+}
+
+function formatPov(pov: string): string {
+  const names: Record<string, string> = {
+    cusi: 'Cusi Yupanqui',
+    rumi: 'Rumi',
+    urqu: 'Urqu',
+    naymlap: 'Naymlap',
+    'mama-ocllo': 'Mama Ocllo',
+    uscovilca: 'Uscovilca',
+    multi: 'Multiple',
+  };
+  return names[pov] ?? pov;
+}
+---
+
+<section class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    {/* Section title */}
+    <h2 class="font-heading text-gold text-2xl md:text-3xl text-center tracking-wide mb-12">
+      {t('section.journey', lang)}
+    </h2>
+
+    {/* Horizontal scroll on mobile, grid on desktop */}
+    <div class="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x snap-mandatory pb-4 md:pb-0 md:overflow-visible scrollbar-hide">
+      {teaserChapters.map((ch) => {
+        const accentColor = getMoodColor(ch.slug);
+        const chapterLabel = ch.chapter === 0
+          ? (lang === 'en' ? 'Prologue' : 'Prologo')
+          : (lang === 'en' ? `Chapter ${ch.chapter}` : `Capitulo ${ch.chapter}`);
+        return (
+          <a
+            href={`/listen/${ch.slug}`}
+            class="group flex-shrink-0 min-w-[280px] md:min-w-0 snap-start rounded-lg border border-gold/15 bg-stone/30 overflow-hidden transition-all hover:border-gold/30 hover:shadow-[0_0_16px_rgba(212,168,67,0.06)]"
+            style={`border-left: 3px solid ${accentColor};`}
+          >
+            {/* Scene thumbnail */}
+            {(() => {
+              const theme = CHAPTER_THEMES.find(t => t.slug === ch.slug);
+              const thumbSrc = theme?.scenes?.[0] ?? null;
+              return thumbSrc ? (
+                <div class="w-full h-32 overflow-hidden bg-stone/50">
+                  <img
+                    src={thumbSrc}
+                    alt=""
+                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              ) : null;
+            })()}
+
+            <div class="p-5">
+              {/* Chapter number badge */}
+              <span
+                class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-gold/30 text-xs font-heading text-gold mb-3"
+              >
+                {ch.chapter}
+              </span>
+
+              {/* Chapter title */}
+              <h3 class="font-heading text-text-primary text-sm leading-snug mb-1 group-hover:text-gold transition-colors">
+                {ch.title}
+              </h3>
+
+              {/* Region */}
+              <p class="text-xs text-text-dim capitalize tracking-wide mb-1">
+                {ch.region.replace(/-/g, ' ')}
+              </p>
+
+              {/* POV character */}
+              <p class="text-xs text-text-secondary italic">
+                POV: {formatPov(ch.pov)}
+              </p>
+            </div>
+          </a>
+        );
+      })}
+
+      {/* Teaser card */}
+      <div class="flex-shrink-0 min-w-[280px] md:min-w-0 snap-start rounded-lg border border-gold/10 bg-stone/20 p-5 flex flex-col items-center justify-center text-center">
+        <p class="font-heading text-gold/60 text-sm tracking-wide">
+          {CHAPTERS.length} {lang === 'en' ? 'chapters' : 'capitulos'}
+        </p>
+        <p class="text-xs text-text-dim mt-1">
+          {lang === 'en' ? 'across the Inca Empire' : 'a traves del Imperio Inca'}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Hide scrollbar for mobile horizontal scroll */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>

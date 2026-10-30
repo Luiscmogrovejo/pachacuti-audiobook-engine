@@ -1,0 +1,60 @@
+{
+  "name": "pachacuti",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "validate-assets": "tsx scripts/validate-assets.ts",
+    "generate:prologue": "node scripts/generate-audiobook-v3.mjs --chapter 00",
+    "generate:prologue:es": "node scripts/generate-audiobook-v3.mjs --chapter 00 --lang es",
+    "generate:prologue:en": "node scripts/generate-audiobook-v3.mjs --chapter 00 --lang en",
+    "generate:all": "node scripts/generate-audiobook-v3.mjs",
+    "generate:dry-run": "node scripts/generate-audiobook-v3.mjs --dry-run",
+    "generate:verify": "node scripts/generate-audiobook-v3.mjs --verify-alignment",
+    "test": "playwright test",
+    "test:mobile": "playwright test --project=mobile-chrome",
+    "test:desktop": "playwright test --project=desktop-chrome",
+    "test:ui": "playwright test --ui",
+    "encrypt:text": "tsx scripts/encrypt-content.ts",
+    "encrypt:audio": "tsx scripts/encrypt-audio.ts",
+    "encrypt:images": "tsx scripts/encrypt-images.ts",
+    "encrypt:all": "npm run encrypt:text && npm run encrypt:audio && npm run encrypt:images",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@astrojs/node": "^10.0.4",
+    "@astrojs/react": "^5.0.2",
+    "@fal-ai/client": "^1.9.5",
+    "@tailwindcss/vite": "^4.2.2",
+    "astro": "^6.1.1",
+    "better-auth": "^1.5.6",
+    "dotenv": "^16.4.0",
+    "drizzle-orm": "^0.45.2",
+    "jose": "^6.2.2",
+    "microsoft-cognitiveservices-speech-sdk": "^1.43.0",
+    "postgres": "^3.4.8",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "resend": "^6.9.4",
+    "sharp": "^0.34.5",
+    "stripe": "^21.0.1",
+    "tailwindcss": "^4.2.2",
+    "typescript": "~5.7.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.21.0"
+  },
+  "overrides": {
+    "vite": "^7"
+  }
+}

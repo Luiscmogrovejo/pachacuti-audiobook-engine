@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.astro/
+
+# Build output
+dist/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Narration audio -- large, volume-mounted into the container at runtime
+public/audio/chapters/
+
+# Generated timing data -- volume-mounted at runtime.
+# The two sample fixtures below are committed so the player and the E2E suite
+# have something to sync against.
+public/audio/timing/**
+!public/audio/timing/en/
+!public/audio/timing/es/
+!public/audio/timing/en/ch00.json
+!public/audio/timing/es/ch00.json
+
+# Encrypted content manifests -- generated per environment
+content/encrypted/*
+!content/encrypted/.gitkeep
+
+# Intermediate build artifacts
+scripts/quechua-words.json
+
+# Generated asset inventory (regenerate with: npm run validate-assets)
+asset-manifest.json
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Art pipeline intermediates
+public/art/raw/
+public/art/candidates/
+
+# Test output
+test-results/
+playwright-report/
+
+# Lighthouse reports
+lighthouse-report.json
+lighthouse-mobile.json

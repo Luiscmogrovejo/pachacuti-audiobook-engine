@@ -1,0 +1,83 @@
+---
+/**
+ * CharacterShowcase.astro -- "Los Personajes" featured characters grid
+ * Shows 6 key characters (the trio + 3 pivotal figures) with portrait
+ * fallback initials, roles, and links to character detail pages.
+ * Bilingual: reads pachacuti-lang cookie for SSR.
+ */
+import { CHARACTERS, type CharacterData } from '../../lib/data/characters';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+const featuredIds = ['cusi', 'rumi', 'naymlap', 'mama-ocllo', 'willaq-umu', 'urqu'];
+const featured: CharacterData[] = featuredIds
+  .map((id) => CHARACTERS.find((c) => c.id === id))
+  .filter((c): c is CharacterData => c !== undefined);
+---
+
+<section class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    {/* Section title */}
+    <h2 class="font-heading text-gold text-2xl md:text-3xl text-center tracking-wide mb-12">
+      {t('section.characters', lang)}
+    </h2>
+
+    {/* Character grid */}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      {featured.map((char) => {
+        const initial = char.name.charAt(0);
+        return (
+          <a
+            href={`/characters/${char.slug}`}
+            class="group flex flex-col items-center text-center"
+          >
+            {/* Portrait frame */}
+            <div
+              class="w-20 h-20 rounded-full overflow-hidden border-2 flex items-center justify-center bg-stone mb-3 transition-all group-hover:shadow-[0_0_16px_rgba(212,168,67,0.15)]"
+              style={`border-color: ${char.accent};`}
+            >
+              <img
+                src={char.portrait}
+                alt={char.name}
+                class="w-full h-full object-cover"
+                loading="eager"
+                
+              />
+              {/* Fallback: initial letter */}
+              <span
+                class="hidden items-center justify-center w-full h-full font-heading-decorative text-2xl"
+                style={`color: ${char.accent};`}
+              >
+                {initial}
+              </span>
+            </div>
+
+            {/* Name */}
+            <p class="font-heading font-bold text-text-primary text-sm group-hover:text-gold transition-colors">
+              {char.name}
+            </p>
+
+            {/* Role */}
+            <p class="text-xs text-text-dim leading-snug mt-1 line-clamp-2">
+              {char.title}
+            </p>
+          </a>
+        );
+      })}
+    </div>
+
+    {/* See all characters link */}
+    <div class="mt-10 text-center">
+      <a
+        href="/characters"
+        class="inline-flex items-center gap-2 text-sm font-heading text-gold/70 hover:text-gold transition-colors uppercase tracking-wider"
+      >
+        <span>{t('section.characters.cta', lang, { n: String(CHARACTERS.length) })}</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="inline" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

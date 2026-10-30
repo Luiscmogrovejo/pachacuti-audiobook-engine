@@ -1,0 +1,192 @@
+---
+/**
+ * HeroSection.astro -- Full-viewport atmospheric hero for the Pachacuti homepage
+ * 5 cycling hero images with Ken Burns crossfade + overlay gradients for text readability.
+ * Contains ContinueListening React island and Start Listening CTA.
+ * Bilingual: reads pachacuti-lang cookie for SSR.
+ */
+import { ContinueListening } from '../player/ContinueListening';
+import { CHAPTERS } from '../../lib/data/chapters';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+const chapterCount = CHAPTERS.length;
+
+const heroImages = [
+  '/art/hero/hero-1-journey.webp',
+  '/art/hero/hero-2-pururaucas.webp',
+  '/art/hero/hero-3-cusco.webp',
+  '/art/hero/hero-4-golden-tree.webp',
+  '/art/hero/hero-5-three-worlds.webp',
+];
+---
+
+<section class="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 overflow-hidden">
+  {/* Layer 1: Cycling hero images with Ken Burns */}
+  <div class="absolute inset-0 z-0" id="hero-slideshow" aria-hidden="true">
+    {heroImages.map((src, i) => (
+      <img
+        src={src}
+        alt=""
+        class:list={['hero-slide', i === 0 && 'hero-slide--active']}
+        data-kb={i % 5}
+        loading={i === 0 ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+    ))}
+  </div>
+
+  {/* Layer 2: Overlay gradients for text readability */}
+  <div class="absolute inset-0 z-[1]" aria-hidden="true" style="background: linear-gradient(180deg, rgba(26,8,0,0.55) 0%, rgba(13,5,2,0.35) 40%, rgba(26,8,0,0.75) 100%);" />
+  <div class="absolute inset-0 z-[1] opacity-[0.03]" aria-hidden="true" style="background: repeating-conic-gradient(rgba(240,230,211,0.04) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px;" />
+  <div class="absolute inset-0 z-[1]" aria-hidden="true" style="background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(212,168,67,0.06), transparent);" />
+
+  {/* Layer 3: Content */}
+  <div class="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
+    {/* Quechua epigraph */}
+    <p class="font-heading-decorative text-gold/50 text-xs md:text-sm italic tracking-widest mb-4">
+      {t('hero.epigraph', lang)}
+    </p>
+
+    {/* Title */}
+    <h1 class="font-heading-decorative text-gold text-5xl md:text-7xl lg:text-8xl tracking-wider leading-none">
+      PACHACUTI
+    </h1>
+
+    {/* Subtitle */}
+    <p class="font-body italic text-text-secondary text-lg md:text-xl mt-4 tracking-wide">
+      {t('hero.subtitle', lang)}
+    </p>
+
+    {/* Tagline */}
+    <p class="font-body text-text-dim text-sm md:text-base mt-2">
+      {t('hero.tagline', lang)}
+    </p>
+
+    {/* CTA section */}
+    <div class="mt-10 w-full max-w-md mx-auto flex flex-col items-center gap-4">
+      {/* ContinueListening: renders null for first-time visitors */}
+      <ContinueListening client:load />
+
+      {/* Start Listening: always visible as fallback/primary CTA */}
+      <a
+        href="/listen/prologue"
+        class="flex items-center justify-center w-full h-14 min-h-[56px] rounded-lg border border-gold/40 text-gold font-heading font-bold text-sm uppercase tracking-wider hover:bg-gold/10 hover:border-gold/60 transition-colors"
+      >
+        {t('hero.cta.start', lang)}
+      </a>
+
+      {/* Chapter count */}
+      <p class="text-xs text-text-dim tracking-wide">
+        {t('hero.chapters', lang, { n: String(chapterCount) })}
+      </p>
+    </div>
+  </div>
+
+  {/* Scroll indicator */}
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-pulse-down">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      class="text-gold/50"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  </div>
+</section>
+
+<style>
+  /* Hero slideshow styles */
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 2.5s ease-in-out;
+    will-change: opacity, transform;
+  }
+
+  .hero-slide--active {
+    opacity: 0.45;
+  }
+
+  /* 5 unique Ken Burns presets via data-kb attribute */
+  .hero-slide[data-kb="0"] { animation: kb0 20s ease-in-out infinite alternate; }
+  .hero-slide[data-kb="1"] { animation: kb1 22s ease-in-out infinite alternate; }
+  .hero-slide[data-kb="2"] { animation: kb2 18s ease-in-out infinite alternate; }
+  .hero-slide[data-kb="3"] { animation: kb3 24s ease-in-out infinite alternate; }
+  .hero-slide[data-kb="4"] { animation: kb4 20s ease-in-out infinite alternate; }
+
+  @keyframes kb0 {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.08) translate(-1.5%, -1%); }
+  }
+  @keyframes kb1 {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.08) translate(1.5%, 0.5%); }
+  }
+  @keyframes kb2 {
+    0% { transform: scale(1.08) translate(0, 0); }
+    100% { transform: scale(1) translate(0, 0); }
+  }
+  @keyframes kb3 {
+    0% { transform: scale(1.04) translate(-1%, 0); }
+    100% { transform: scale(1.04) translate(1%, 0); }
+  }
+  @keyframes kb4 {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.06) translate(0, -1.5%); }
+  }
+
+  /* Scroll indicator pulse */
+  @keyframes pulse-down {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50% { opacity: 0.8; transform: translateY(4px); }
+  }
+  .animate-pulse-down {
+    animation: pulse-down 2.5s ease-in-out infinite;
+  }
+</style>
+
+<script>
+  // Hero slideshow: cycle through images every 8 seconds with crossfade
+  function initHeroSlideshow() {
+    const container = document.getElementById('hero-slideshow');
+    if (!container) return;
+
+    const slides = container.querySelectorAll<HTMLImageElement>('.hero-slide');
+    if (slides.length === 0) return;
+
+    let current = 0;
+    let isVisible = true;
+
+    // Page Visibility API: pause cycling when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      isVisible = !document.hidden;
+    });
+
+    setInterval(() => {
+      if (!isVisible) return;
+
+      slides[current].classList.remove('hero-slide--active');
+      slides[current].style.opacity = '0';
+
+      current = (current + 1) % slides.length;
+
+      slides[current].classList.add('hero-slide--active');
+      slides[current].style.opacity = '0.45';
+    }, 8000);
+  }
+
+  // Run on initial load and Astro View Transition navigations
+  initHeroSlideshow();
+  document.addEventListener('astro:page-load', initHeroSlideshow);
+</script>

@@ -1,0 +1,220 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CHARACTERS, getCharacterBySlug } from '../../lib/data/characters';
+import { CHAPTERS } from '../../lib/data/chapters';
+import { CHAPTER_THEMES } from '../../lib/data/themes';
+import { CharacterRelationships } from '../../components/universe/CharacterRelationships';
+import CharacterChapters from '../../components/universe/CharacterChapters.astro';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+const { slug } = Astro.params;
+
+// SSR: look up character by slug, 404 if not found
+const character = slug ? getCharacterBySlug(slug) : undefined;
+if (!character) {
+  return Astro.redirect('/characters');
+}
+
+// Access control: non-trio characters require paid access
+const FREE_CHARACTER_IDS = ['cusi', 'rumi', 'naymlap'];
+if (!FREE_CHARACTER_IDS.includes(character.id)) {
+  try {
+    const { getIsPaid } = await import('../../lib/auth/server');
+    const isPaid = await getIsPaid(Astro.request);
+    if (!isPaid) {
+      return Astro.redirect('/characters');
+    }
+  } catch {
+    // If auth check fails (DB down etc.), redirect to be safe
+    return Astro.redirect('/characters');
+  }
+}
+
+const initial = character.name.charAt(0);
+
+// Find first chapter config for linking
+const firstChapterConfig = CHAPTERS.find(ch => ch.chapter === character.firstChapter);
+const firstChapterSlug = firstChapterConfig?.slug;
+const firstChapterTitle = firstChapterConfig?.title;
+
+// Look up atmospheric background from chapter theme
+const chapterTheme = firstChapterSlug
+  ? CHAPTER_THEMES.find(t => t.slug === firstChapterSlug)
+  : undefined;
+const bgImage = chapterTheme?.bg || '/art/backgrounds/ui/characters-bg.webp';
+
+// Parse arc into segments for visual display
+const arcSegments = character.arc.split('\u2192').map(s => s.trim());
+
+// Prepare minimal character data for React island (JSON-safe)
+const allCharactersMinimal = CHARACTERS.map(c => ({
+  id: c.id,
+  slug: c.slug,
+  name: c.name,
+  accent: c.accent,
+  title: c.title,
+}));
+---
+
+<BaseLayout title={`${character.name} | Personajes`} description={character.role}>
+  <!-- Atmospheric background based on character's first chapter -->
+  <div class="fixed inset-0 -z-10">
+    <img src={bgImage} alt="" class="w-full h-full object-cover opacity-40" loading="eager" />
+    <div class="absolute inset-0 bg-gradient-to-b from-volcanic/70 via-volcanic/60 to-volcanic/80"></div>
+  </div>
+  <main class="max-w-5xl mx-auto px-4 md:px-8 py-8 md:py-12">
+    <!-- Back link -->
+    <a href="/characters" class="inline-flex items-center gap-2 font-heading text-sm text-gold hover:text-gold-light transition-colors mb-8">
+      <span>&larr;</span>
+      <span>{t('page.characters.detail.back', lang)}</span>
+    </a>
+
+    <!-- Two column layout -->
+    <div class="flex flex-col md:flex-row gap-8 md:gap-12">
+      <!-- Left column: Portrait + Quick Facts -->
+      <div class="md:w-1/3 flex-shrink-0">
+        <!-- Portrait -->
+        <div class="w-full max-w-sm aspect-[3/4] rounded-xl overflow-hidden relative mb-6 border border-white/10" style={`border-color: color-mix(in srgb, ${character.accent} 25%, transparent)`}>
+          <div class="absolute inset-0 flex items-center justify-center bg-stone/80">
+            <span
+              class="font-heading-decorative text-7xl select-none"
+              style={`color: ${character.accent}`}
+            >
+              {initial}
+            </span>
+          </div>
+          <img
+            src={character.portrait}
+            alt={character.name}
+            draggable="false"
+            class="relative w-full h-full object-cover z-10 select-none"
+            style="-webkit-user-drag: none; user-drag: none;"
+            
+          />
+          <!-- Transparent overlay: prevents right-click save image on portrait -->
+          <div class="absolute inset-0 z-20" oncontextmenu="event.preventDefault()"></div>
+        </div>
+
+        <!-- Name and Title -->
+        <h1
+          class="font-heading-decorative text-2xl md:text-3xl mb-1"
+          style={`color: ${character.accent}`}
+        >
+          {character.name}
+        </h1>
+        <p
+          class="font-heading italic text-lg mb-4"
+          style={`color: ${character.accent}; opacity: 0.75`}
+        >
+          {character.title}
+        </p>
+
+        <!-- Quick Facts -->
+        <div class="space-y-3 text-sm">
+          <!-- Faction -->
+          <div>
+            <span class="font-heading text-text-dim text-xs uppercase tracking-wider block mb-1">{t('page.characters.detail.faction', lang)}</span>
+            <span
+              class="inline-block text-xs px-3 py-1 rounded-full border"
+              style={`color: ${character.accent}; border-color: color-mix(in srgb, ${character.accent} 30%, transparent)`}
+            >
+              {character.faction}
+            </span>
+          </div>
+
+          <!-- First Appearance -->
+          <div>
+            <span class="font-heading text-text-dim text-xs uppercase tracking-wider block mb-1">{t('page.characters.detail.firstAppearance', lang)}</span>
+            {firstChapterSlug ? (
+              <a
+                href={`/listen/${firstChapterSlug}`}
+                class="font-body text-gold hover:text-gold-light transition-colors"
+              >
+                Cap. {character.firstChapter}: {firstChapterTitle}
+              </a>
+            ) : (
+              <span class="font-body text-text-secondary">Capitulo {character.firstChapter}</span>
+            )}
+          </div>
+
+          <!-- Quechua Etymology -->
+          <div>
+            <span class="font-heading text-text-dim text-xs uppercase tracking-wider block mb-1">{t('page.characters.detail.etymology', lang)}</span>
+            <p class="font-body italic text-text-secondary text-sm leading-relaxed">
+              {character.quechuaMeaning}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Bio sections -->
+      <div class="md:w-2/3 space-y-8">
+        <!-- Quien Es -->
+        <section>
+          <h2 class="font-heading text-gold text-lg uppercase tracking-wider pb-2 mb-4 border-b border-gold/20">
+            {t('page.characters.detail.whoIs', lang)}
+          </h2>
+          <p class="font-body text-text-primary leading-relaxed text-base">
+            {character.full}
+          </p>
+        </section>
+
+        <!-- Personalidad -->
+        <section>
+          <h2 class="font-heading text-gold text-lg uppercase tracking-wider pb-2 mb-4 border-b border-gold/20">
+            {t('page.characters.detail.personality', lang)}
+          </h2>
+          <p class="font-body text-text-primary leading-relaxed text-base">
+            {character.personality}
+          </p>
+        </section>
+
+        <!-- Arco Narrativo -->
+        <section>
+          <h2 class="font-heading text-gold text-lg uppercase tracking-wider pb-2 mb-4 border-b border-gold/20">
+            {t('page.characters.detail.arc', lang)}
+          </h2>
+          <div class="flex flex-wrap items-center gap-2">
+            {arcSegments.map((segment, i) => (
+              <>
+                <span class="font-body text-text-primary text-sm bg-stone/40 rounded-lg px-3 py-1.5 border border-white/5">
+                  {segment}
+                </span>
+                {i < arcSegments.length - 1 && (
+                  <span class="text-gold text-lg select-none">&rarr;</span>
+                )}
+              </>
+            ))}
+          </div>
+        </section>
+
+        <!-- Etimologia Quechua (expanded, right column version) -->
+        <section>
+          <h2 class="font-heading text-gold text-lg uppercase tracking-wider pb-2 mb-4 border-b border-gold/20">
+            Etimologia Quechua
+          </h2>
+          <p class="font-body italic text-text-secondary leading-relaxed text-base">
+            {character.quechuaMeaning}
+          </p>
+        </section>
+
+        <!-- Relationships (React island for interactive hover) -->
+        <CharacterRelationships
+          client:visible
+          characterId={character.id}
+          relationships={[...character.relationships]}
+          allCharacters={allCharactersMinimal}
+        />
+
+        <!-- Chapter Appearances -->
+        <CharacterChapters
+          characterId={character.id}
+          firstChapter={character.firstChapter}
+          spoilerChapter={character.spoilerChapter}
+        />
+      </div>
+    </div>
+  </main>
+</BaseLayout>

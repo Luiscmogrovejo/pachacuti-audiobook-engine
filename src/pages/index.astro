@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroSection from '../components/homepage/HeroSection.astro';
+import WorldPreview from '../components/homepage/WorldPreview.astro';
+import ChapterTeaser from '../components/homepage/ChapterTeaser.astro';
+import CharacterShowcase from '../components/homepage/CharacterShowcase.astro';
+import FooterCTA from '../components/homepage/FooterCTA.astro';
+---
+<BaseLayout
+  title="Home"
+  ogTitle="Pachacuti -- An Immersive Inca Audiobook"
+  ogDescription="Journey through 1438 Peru in an atmospheric audiobook experience. 24 chapters, 26 characters, Spanish and English."
+  ogType="website"
+>
+  <HeroSection />
+  <hr class="border-gold/10 max-w-xl mx-auto my-0" />
+  <WorldPreview />
+  <hr class="border-gold/10 max-w-xl mx-auto my-0" />
+  <ChapterTeaser />
+  <hr class="border-gold/10 max-w-xl mx-auto my-0" />
+  <CharacterShowcase />
+  <hr class="border-gold/10 max-w-xl mx-auto my-0" />
+  <FooterCTA />
+</BaseLayout>

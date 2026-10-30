@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SignInForm } from '../../components/auth/SignInForm';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+
+// Tier data for the breakdown cards (updated: free=ch0-4, signup=ch5-10, paid=ch11-23)
+const tiers = [
+  {
+    name: t('auth.tiers.free', lang),
+    chapters: lang === 'en' ? '5 chapters' : '5 capitulos',
+    range: 'Ch 0-4',
+    features: lang === 'en'
+      ? ['Prologue + 4 chapters', 'Spanish & English audio', 'Text sync & karaoke']
+      : ['Prologo + 4 capitulos', 'Audio en Espanol e Ingles', 'Sincronizacion de texto'],
+    active: true,
+    cta: false,
+  },
+  {
+    name: t('auth.tiers.signup', lang),
+    chapters: lang === 'en' ? '6 chapters' : '6 capitulos',
+    range: 'Ch 5-10',
+    features: lang === 'en'
+      ? ['6 additional chapters', 'Cross-device sync', 'Bookmarks & progress']
+      : ['6 capitulos adicionales', 'Sincronizacion entre dispositivos', 'Marcadores y progreso'],
+    active: false,
+    cta: true,
+  },
+  {
+    name: t('auth.tiers.paid', lang),
+    chapters: lang === 'en' ? '13 chapters' : '13 capitulos',
+    range: 'Ch 11-23',
+    features: lang === 'en'
+      ? ['Complete Pachacuti saga', 'All 32 character portraits', 'Full gallery access']
+      : ['Saga completa de Pachacuti', 'Los 32 retratos de personajes', 'Galeria completa'],
+    active: false,
+    cta: false,
+    isPremium: true,
+  },
+];
+---
+
+<BaseLayout title="Sign In">
+  <div class="fixed inset-0 -z-10">
+    <img src="/art/backgrounds/ui/gold-textile.webp" alt="" class="w-full h-full object-cover opacity-40" />
+    <div class="absolute inset-0 bg-gradient-to-b from-volcanic/70 via-volcanic/60 to-volcanic/80"></div>
+  </div>
+  <div class="flex flex-col items-center justify-center min-h-[80vh] px-4 pt-8">
+    <SignInForm client:load turnstileSiteKey={turnstileSiteKey} />
+
+    {/* Tier breakdown cards */}
+    <div class="mt-10 w-full max-w-2xl">
+      <h2 class="text-center text-sm font-heading uppercase tracking-[0.2em] text-gold/60 mb-6">
+        {lang === 'en' ? 'What you get' : 'Lo que obtienes'}
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {tiers.map((tier) => (
+          <div
+            class:list={[
+              'rounded-xl p-5 relative overflow-hidden transition-all',
+              tier.cta ? 'ring-1 ring-gold/30' : '',
+            ]}
+            style={`background: linear-gradient(180deg, rgba(26, 23, 20, 0.9) 0%, rgba(13, 9, 7, 0.95) 100%); border: 1px solid rgba(212, 168, 67, ${tier.cta ? '0.3' : '0.1'});`}
+          >
+            {/* Tier name */}
+            <p class="text-xs font-heading uppercase tracking-widest text-center mb-1" style="color: #d4a843;">
+              {tier.name}
+            </p>
+            <p class="text-lg font-heading text-center text-text-primary mb-1" style="font-family: 'Cinzel', serif;">
+              {tier.chapters}
+            </p>
+            <p class="text-xs text-text-dim text-center mb-3">
+              {tier.range}
+            </p>
+
+            {/* Features checklist */}
+            <ul class="space-y-2">
+              {tier.features.map((feature) => (
+                <li class="flex items-start gap-2 text-xs text-text-secondary" style="font-family: 'Crimson Text', serif;">
+                  <span style="color: #d4a843; font-size: 10px; line-height: 1.6;">&#9830;</span>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            {/* Current tier badge */}
+            {tier.active && (
+              <p class="text-[10px] uppercase tracking-wider text-center mt-3 px-2 py-0.5 rounded-full" style="color: #d4a843; background: rgba(212, 168, 67, 0.1); border: 1px solid rgba(212, 168, 67, 0.2);">
+                {lang === 'en' ? 'Current' : 'Actual'}
+              </p>
+            )}
+
+            {/* Premium purchase link */}
+            {tier.isPremium && (
+              <a
+                href="/payment"
+                class="block text-[10px] uppercase tracking-wider text-center mt-3 px-2 py-0.5 rounded-full transition-all hover:brightness-110"
+                style="color: #d4a843; background: rgba(212, 168, 67, 0.1); border: 1px solid rgba(212, 168, 67, 0.2);"
+              >
+                {lang === 'en' ? 'Unlock Premium' : 'Desbloquear Premium'}
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <a
+      href="/"
+      class="mt-6 text-sm text-text-secondary hover:text-gold transition-colors"
+    >
+      &larr; {t('page.signin.back', lang)}
+    </a>
+  </div>
+</BaseLayout>

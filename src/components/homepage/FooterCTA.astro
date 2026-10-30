@@ -1,0 +1,51 @@
+---
+/**
+ * FooterCTA.astro -- Final call-to-action section before the page footer
+ * "Begin the Journey" with atmospheric gradient, Start Listening CTA,
+ * ProgressBadge for return visitors, and Quechua closing.
+ * Bilingual: reads pachacuti-lang cookie for SSR.
+ */
+import { ProgressBadge } from '../player/ProgressBadge';
+import { getServerLanguage } from '../../lib/i18n/getServerLanguage';
+import { t } from '../../lib/i18n/strings';
+
+const lang = getServerLanguage(Astro);
+---
+
+<section class="relative py-24 px-6 overflow-hidden">
+  {/* Atmospheric gradient background */}
+  <div class="absolute inset-0" style="background: linear-gradient(180deg, rgba(26,8,0,0.2) 0%, rgba(26,8,0,0.8) 40%, rgba(26,8,0,1) 100%);" aria-hidden="true" />
+  <div class="absolute inset-0" style="background: radial-gradient(ellipse 80% 50% at 50% 60%, rgba(212,168,67,0.03), transparent);" aria-hidden="true" />
+
+  <div class="relative z-10 max-w-2xl mx-auto text-center">
+    {/* CTA heading */}
+    <h2 class="font-heading-decorative text-gold text-3xl md:text-4xl tracking-wide">
+      {t('footer.cta.heading', lang)}
+    </h2>
+
+    {/* Subtitle */}
+    <p class="font-body text-text-secondary text-base md:text-lg mt-4 leading-relaxed">
+      {t('footer.cta.subtitle', lang)}
+    </p>
+
+    {/* Start Listening button */}
+    <div class="mt-8">
+      <a
+        href="/listen/prologue"
+        class="inline-flex items-center justify-center h-14 min-h-[56px] px-10 rounded-lg bg-gold text-volcanic font-heading font-bold text-sm uppercase tracking-wider hover:bg-gold-light transition-colors"
+      >
+        {t('hero.cta.start', lang)}
+      </a>
+    </div>
+
+    {/* ProgressBadge for return visitors */}
+    <div class="mt-6">
+      <ProgressBadge client:load />
+    </div>
+
+    {/* Quechua closing */}
+    <p class="mt-10 font-body italic text-text-dim text-sm tracking-wide">
+      {t('footer.cta.closing', lang)}
+    </p>
+  </div>
+</section>

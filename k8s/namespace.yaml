@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pachacuti
+  labels:
+    app: pachacuti
+    kubernetes.io/metadata.name: pachacuti
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pachacuti-quota
+  namespace: pachacuti
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    pods: "10"
